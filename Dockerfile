@@ -17,6 +17,5 @@ RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /rds-test /rds-test
 
-EXPOSE 8080
 
 CMD ["/rds-test"]
