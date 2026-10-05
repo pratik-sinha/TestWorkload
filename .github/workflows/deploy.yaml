@@ -57,11 +57,11 @@ jobs:
             --services ${{ env.ECS_SERVICE }} \
             --query 'services[0].taskDefinition' \
             --output text)
-
+            
           aws ecs describe-task-definition \
-            --task-definition ${{ env.ECS_SERVICE }} \
-            --query taskDefinition \
-            > task-definition.json
+              --task-definition "$TASK_DEF_ARN" \
+              --query taskDefinition \
+              > task-definition.json
 
       - name: Render new task definition with updated image
         id: render-task-def
