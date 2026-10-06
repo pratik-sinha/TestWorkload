@@ -13,12 +13,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type DBConfig struct {
+type SecretConfig struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	DBName   string `json:"dbname"`
+}
+
+type DBConfig struct {
+	Host    string
+	Port    int
+	DBName  string
+	Secrets SecretConfig
 }
 
 type CheckResponse struct {
@@ -73,21 +77,28 @@ func loadDBConfig() error {
 		return fmt.Errorf("DB_CONFIG environment variable is required")
 	}
 
-	var config DBConfig
+	var secretConfig SecretConfig
 
 	if err := json.Unmarshal(
 		[]byte(secret),
-		&config,
+		&secretConfig,
 	); err != nil {
 		return fmt.Errorf("failed to parse DB_CONFIG: %w", err)
 	}
 
-	if config.Username == "" {
+	if secretConfig.Username == "" {
 		return fmt.Errorf("DB_CONFIG username is missing")
 	}
 
-	if config.Password == "" {
+	if secretConfig.Password == "" {
 		return fmt.Errorf("DB_CONFIG password is missing")
+	}
+
+	config := DBConfig{
+		Secrets: secretConfig,
+		Host:    os.Getenv("my_db_My_test_project_0beb8486_storage_rds_db_port"),
+		Port:    5432,
+		DBName:  os.Getenv("my_db_My_test_project_0beb8486_storage_rds_db_name"),
 	}
 
 	if config.Host == "" {
@@ -146,7 +157,7 @@ func secretHandler(w http.ResponseWriter, r *http.Request) {
 			"host":     dbConfig.Host,
 			"port":     dbConfig.Port,
 			"database": dbConfig.DBName,
-			"username": dbConfig.Username,
+			"username": dbConfig.Secrets.Username,
 		},
 	})
 }
@@ -169,8 +180,8 @@ func rdsHandler(w http.ResponseWriter, r *http.Request) {
 
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s",
-		dbConfig.Username,
-		dbConfig.Password,
+		dbConfig.Secrets.Username,
+		dbConfig.Secrets.Password,
 		dbConfig.Host,
 		dbConfig.Port,
 		dbConfig.DBName,
