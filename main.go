@@ -96,7 +96,7 @@ func loadDBConfig() error {
 
 	config := DBConfig{
 		Secrets: secretConfig,
-		Host:    os.Getenv("my_db_My_test_project_0beb8486_storage_rds_db_port"),
+		Host:    os.Getenv("my_db_My_test_project_0beb8486_storage_rds_db_host"),
 		Port:    5432,
 		DBName:  os.Getenv("my_db_My_test_project_0beb8486_storage_rds_db_name"),
 	}
